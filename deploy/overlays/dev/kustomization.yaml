@@ -2,18 +2,18 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: app-dev
 resources:
-  - ../../base
+- ../../base
 # The CI workflow rewrites newTag on every push to main (`kustomize edit set image`),
 # so this file is the record of what dev is running. OWNER/REPO are placeholders.
 images:
-  - name: app
-    newName: ghcr.io/OWNER/REPO/app
-    newTag: "0000000000000000000000000000000000000000"
+- name: app
+  newName: ghcr.io/sup3rmar10/k8s-cicd-gitops/app
+  newTag: 95461ad399f3ec47db72e296ef700a688f0a92de
 patches:
-  - target:
-      kind: Deployment
-      name: app
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/0/value
-        value: dev
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/env/0/value
+      value: dev
+  target:
+    kind: Deployment
+    name: app
