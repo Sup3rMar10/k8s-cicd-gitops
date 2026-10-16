@@ -8,7 +8,7 @@ resources:
 images:
 - name: app
   newName: ghcr.io/sup3rmar10/k8s-cicd-gitops/app
-  newTag: 95461ad399f3ec47db72e296ef700a688f0a92de
+  newTag: 8b3cc3c848b593271cdbddfc9d85addcf86b78c0
 patches:
 - patch: |-
     - op: replace
