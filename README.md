@@ -1,6 +1,6 @@
 # 🚢 k8s-cicd-gitops
 
-> **Reference configuration.** Written to show the pipeline; it has not been run or tested end to end. The workflows have never executed and Argo CD was never connected to a cluster. Only `kubectl kustomize` was used to check that the overlays render.
+> **Reference configuration.** Written to show the pipeline; it has not been tested end to end. The CI workflow has run on GitHub only as far as described in "What was and was not checked", and Argo CD was never connected to a cluster. `kubectl kustomize` was used to check that the overlays render.
 
 A small GitOps delivery setup for one tiny service: a GitHub Actions pipeline that builds, scans and pushes an image, a Kustomize layout for dev and prod, and Argo CD applications that deploy from Git. The point is the shape of the pipeline and why each piece is there.
 
@@ -53,7 +53,8 @@ argocd/                   Argo CD Application for dev (automated) and prod (manu
 ## What was and was not checked
 
 - **Checked:** `kubectl kustomize` renders both overlays (dev: Deployment, Service, PDB; prod: those plus the HPA), and every YAML file parses.
-- **Not checked, so treat as likely to need fixes:** nothing in `.github/workflows/` has run; the Docker image was never built; Argo CD was never pointed at this repo; the kubeconform image tag in `validate.yml` was not confirmed to exist; the assumption that `kustomize` is preinstalled on the runner is unverified; the CI commit step needs the repo to allow the workflow to push to `main` (branch protection would block it); the Trivy gate was never exercised; prod renders `replicas: 2` from the base and relies on the HPA's `minReplicas: 3` to take over.
+- **CI ran once on GitHub and failed at "Set up job"** (2026-10-16): `Unable to resolve action aquasecurity/trivy-action@0.28.0, unable to find version 0.28.0`. The upstream tag is `v0.28.0`, with the `v`. That was fixed afterwards. The steps after it (build, scan, push, tag bump) had not run at the time of that failure, and `OWNER/REPO` is still a placeholder, so a later step may fail until it is replaced.
+- **Not checked, so treat as likely to need fixes:** the build, scan, push and tag-bump steps of `.github/workflows/ci.yml`, and `validate.yml`; the Docker image was never built; Argo CD was never pointed at this repo; the kubeconform image tag in `validate.yml` was not confirmed to exist; the assumption that `kustomize` is preinstalled on the runner is unverified; the CI commit step needs the repo to allow the workflow to push to `main` (branch protection would block it); the Trivy gate was never exercised; prod renders `replicas: 2` from the base and relies on the HPA's `minReplicas: 3` to take over.
 
 ## What I would add for a real customer
 
