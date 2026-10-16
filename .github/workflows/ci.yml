@@ -1,4 +1,4 @@
-# REFERENCE ONLY: this workflow has never run. Replace nothing here with real secrets; it uses the
+# Reference workflow. It has run on GitHub (see the README for the first two failed runs and the later success). Replace nothing here with real secrets; it uses the
 # automatic GITHUB_TOKEN. OWNER/REPO placeholders live in deploy/overlays/*/kustomization.yaml.
 name: ci
 
