@@ -55,7 +55,7 @@ jobs:
 
       # Gate: fail the pipeline on CRITICAL vulnerabilities that have a fix available.
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@v0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
           severity: CRITICAL
