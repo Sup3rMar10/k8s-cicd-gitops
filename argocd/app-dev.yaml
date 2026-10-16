@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/OWNER/REPO.git     # placeholder
+    targetRevision: main
+    path: deploy/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app-dev
+  syncPolicy:
+    automated:            # dev follows Git on its own
+      prune: true         # delete resources that were removed from Git
+      selfHeal: true      # undo manual changes made with kubectl
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,38 @@
+# REFERENCE ONLY: this workflow has never run, and the kubeconform image tag below has not been
+# checked to exist. It renders both overlays and schema-checks the output on every pull request,
+# which is the gate for the prod promotion PR.
+name: validate
+
+on:
+  pull_request:
+    paths:
+      - "deploy/**"
+      - "argocd/**"
+
+permissions:
+  contents: read
+
+jobs:
+  render-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Render overlays
+        run: |
+          kubectl kustomize deploy/overlays/dev  > dev.yaml
+          kubectl kustomize deploy/overlays/prod > prod.yaml
+
+      # -ignore-missing-schemas: the Argo CD Application CRD has no schema in the default set.
+      - name: Schema check (kubeconform)
+        run: |
+          for f in dev.yaml prod.yaml; do
+            docker run --rm -i ghcr.io/yannh/kubeconform:v0.6.7 -strict -summary -ignore-missing-schemas - < "$f"
+          done
+
+      # Cheap policy check: no :latest and no missing tag in rendered images.
+      - name: No floating image tags
+        run: |
+          if grep -E 'image: .*(:latest)?$' dev.yaml prod.yaml | grep -Ev ':[0-9a-f]{40}$'; then
+            echo "image without a pinned SHA tag found"; exit 1
+          fi

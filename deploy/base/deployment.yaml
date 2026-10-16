@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app.kubernetes.io/name: app
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0          # keep full capacity while new pods become ready
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app
+    spec:
+      terminationGracePeriodSeconds: 30
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: app
+          # "app" is a placeholder name; the overlays' `images:` block maps it to the real
+          # registry path and a git-SHA tag. There is deliberately no :latest anywhere.
+          image: app
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: APP_VERSION
+              value: unset
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          startupProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 2
+            failureThreshold: 15
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

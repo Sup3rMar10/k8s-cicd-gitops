@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/OWNER/REPO.git     # placeholder
+    targetRevision: main
+    path: deploy/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app-prod
+  # No `automated` block: prod only changes when a person clicks Sync (or runs `argocd app sync`)
+  # after the promotion pull request has been merged.
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  # The HPA owns the replica count in prod, so Argo CD must not report it as drift or fight it.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
